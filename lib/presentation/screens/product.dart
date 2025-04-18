@@ -269,8 +269,7 @@ class _ProductScreenState extends State<ProductScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
-                // 'http://lks-2025.test/storage/${item.image}',
-                'http://192.168.137.1/lks-2025/public/storage/${item.image}',
+                'https://res.cloudinary.com/dp7gguz9g/image/upload/v1744874761/${item.image}',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.grey[300],
@@ -289,11 +288,15 @@ class _ProductScreenState extends State<ProductScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        item.name,
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                      Expanded(
+                        child: Text(
+                          item.name,
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Row(

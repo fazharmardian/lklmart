@@ -131,14 +131,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                           final file = await _generatePdf();
                           AnimatedSnackBar.material(
                                   'Invoice saved to ${file.path}',
-                                  type: AnimatedSnackBarType.error)
+                                  type: AnimatedSnackBarType.info)
                               .show(context);
-
-                          // Optionally open the PDF preview
-                          await Printing.layoutPdf(
-                            onLayout: (PdfPageFormat format) async =>
-                                await file.readAsBytes(),
-                          );
                         } catch (e) {
                           AnimatedSnackBar.material(e.toString(),
                                   type: AnimatedSnackBarType.error)
@@ -162,7 +156,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                         ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -171,36 +165,78 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           // Buttons
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 24),
+            child: Column(
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    _shareInvoice();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(150, 40),
-                    backgroundColor: const Color(0xFF315472),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _shareInvoice();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 40),
+                          backgroundColor: const Color(0xFF315472),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Share',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'Share',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          try {
+                            final file = await _generatePdf();
+
+                            // Optionally open the PDF preview
+                            await Printing.layoutPdf(
+                              onLayout: (PdfPageFormat format) async =>
+                                  await file.readAsBytes(),
+                            );
+                          } catch (e) {
+                            AnimatedSnackBar.material(e.toString(),
+                                    type: AnimatedSnackBarType.error)
+                                .show(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 40),
+                          backgroundColor: const Color(0xFF315472),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Print',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 12),
+                SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(150, 40),
+                    minimumSize: const Size(double.infinity, 40),
                     backgroundColor: const Color(0xFF315472),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     shape: RoundedRectangleBorder(

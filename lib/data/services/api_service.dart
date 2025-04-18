@@ -7,8 +7,7 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  // http://lks-2025.test/api
-  final String baseUrl = 'http://192.168.137.1/lks-2025/public/api';
+  final String baseUrl = 'https://lkmart.vercel.app/public/api';
   String? _token;
   final _client = http.Client();
   final Map<String, String> _defaultHeaders = {
