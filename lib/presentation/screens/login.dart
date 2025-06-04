@@ -63,10 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         await prefs.setString('user', jsonEncode(userData));
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainHomeScreen()),
-        );
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => MainHomeScreen()), (Route<dynamic> route) => false);
       } catch (e) {
         AnimatedSnackBar.material(
           'Error: ${e.toString()}',
