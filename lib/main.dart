@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'presentation/screens/invoice.dart';
-import 'presentation/screens/main_home.dart';
-import 'presentation/screens/register.dart';
 import 'presentation/screens/splash.dart';
 
 void main() {

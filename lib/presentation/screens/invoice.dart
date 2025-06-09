@@ -106,8 +106,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                               ),
                               const SizedBox(height: 12),
                             ],
-                          ))
-                      .toList(),
+                          )),
 
                   // Total
                   const Divider(thickness: 1),
@@ -129,6 +128,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                       onPressed: () async {
                         try {
                           final file = await _generatePdf();
+                          if (!context.mounted) return;
                           AnimatedSnackBar.material(
                                   'Invoice saved to ${file.path}',
                                   type: AnimatedSnackBarType.info)
@@ -200,13 +200,14 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                         onPressed: () async {
                           try {
                             final file = await _generatePdf();
-
+                            if (!context.mounted) return;
                             // Optionally open the PDF preview
                             await Printing.layoutPdf(
                               onLayout: (PdfPageFormat format) async =>
                                   await file.readAsBytes(),
                             );
                           } catch (e) {
+                            if (!context.mounted) return;
                             AnimatedSnackBar.material(e.toString(),
                                     type: AnimatedSnackBarType.error)
                                 .show(context);
@@ -346,6 +347,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
       final file = await _generatePdf();
       await Share.shareXFiles([XFile(file.path)], text: 'Here is your invoice');
     } catch (e) {
+      if (!mounted) return;
       AnimatedSnackBar.material(
         'Failed to share invoice: $e',
         type: AnimatedSnackBarType.error,
@@ -416,8 +418,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                           ),
                           pw.SizedBox(height: 12),
                         ],
-                      ))
-                  .toList(),
+                      )),
 
               // Total
               pw.Divider(thickness: 1, color: PdfColors.grey300),

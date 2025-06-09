@@ -49,14 +49,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             errorResponse['error'] ??
             'Failed to load profile (HTTP ${response.statusCode})');
       }
-    } on FormatException catch (e) {
-      setState(() => errorMessage = 'Invalid server response format');
-      _showError(errorMessage);
-      debugPrint('JSON Format Error: $e');
-    } on http.ClientException catch (e) {
-      setState(() => errorMessage = 'Network error: ${e.message}');
-      _showError(errorMessage);
-      debugPrint('Network Error: $e');
     } catch (e) {
       setState(() => errorMessage = e.toString());
       _showError(errorMessage);
@@ -77,6 +69,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final apiService = ApiService();
       final response = await apiService.logout();
 
+      if (!mounted) return;
+
       if (response.statusCode != 200) {
         throw Exception('Logout failed (HTTP ${response.statusCode})');
       }
@@ -86,12 +80,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         type: AnimatedSnackBarType.success,
       ).show(context);
 
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SplashScreen()),
-        );
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SplashScreen()),
+      );
     } catch (e) {
       if (mounted) {
         AnimatedSnackBar.material(
@@ -137,7 +129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
             decoration: BoxDecoration(
-              color: Colors.lightBlueAccent.withOpacity(0.2),
+              color: Colors.lightBlueAccent.withValues(alpha: 0.2),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

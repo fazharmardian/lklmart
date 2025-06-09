@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -60,6 +59,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       final responseData = jsonDecode(response.body);
 
+      if (!mounted) return;
+
       if (response.statusCode != 200) {
         CustomSnackBar.showError(
           context: context,
@@ -73,12 +74,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         message: responseData['message'] ?? 'Registration successful!',
       );
 
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-        );
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
     } catch (e) {
       CustomSnackBar.showError(
         context: context,

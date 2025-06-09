@@ -48,6 +48,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
         final response = await apiService.login(email, password);
 
+        if (!mounted) return;
+
         if (response.statusCode != 200) {
           final errorData = jsonDecode(response.body);
           AnimatedSnackBar.material(
@@ -63,12 +65,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
         await prefs.setString('user', jsonEncode(userData));
 
-        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => MainHomeScreen()), (Route<dynamic> route) => false);
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => MainHomeScreen()),
+              (Route<dynamic> route) => false);
+        }
       } catch (e) {
-        AnimatedSnackBar.material(
-          'Error: ${e.toString()}',
-          type: AnimatedSnackBarType.error,
-        ).show(context);
+        if (mounted) {
+          AnimatedSnackBar.material(
+            'Error: ${e.toString()}',
+            type: AnimatedSnackBarType.error,
+          ).show(context);
+        }
       } finally {
         if (mounted) {
           setState(() => isLoading = false);
@@ -200,6 +209,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           rememberMe = value ?? false;
                         });
                       },
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)
+                      ),
                     ),
                     Text(
                       'Keep me logged in',

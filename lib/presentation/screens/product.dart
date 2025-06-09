@@ -69,10 +69,11 @@ class _ProductScreenState extends State<ProductScreen> {
     } catch (e) {
       if (mounted) {
         AnimatedSnackBar.material(
-          e.toString(),
+          "Failed to load items",
           type: AnimatedSnackBarType.error,
         ).show(context);
       }
+      print("error: $e.toString()");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }

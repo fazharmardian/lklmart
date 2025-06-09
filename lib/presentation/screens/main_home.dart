@@ -34,7 +34,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
         height: 60,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.5),
+          color: Colors.grey.withValues(alpha: 0.5),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
