@@ -17,8 +17,10 @@ class ProductScreen extends StatefulWidget {
 
 class _ProductScreenState extends State<ProductScreen> {
   bool isLoading = false;
+
   List<Item> items = [];
   List<Item> filteredItems = [];
+
   final TextEditingController _searchController = TextEditingController();
 
   // Cart state
@@ -219,7 +221,7 @@ class _ProductScreenState extends State<ProductScreen> {
               onSubmitted: _searchItems,
               onChanged: (value) {
                 // Optional: search as you type
-                // _searchItems(value);
+                _searchItems(value);
               },
             ),
           ),

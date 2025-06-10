@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
 
 import '../../data/models/user.dart';
 import '../../data/services/api_service.dart';

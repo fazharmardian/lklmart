@@ -7,20 +7,23 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  final String baseUrl = 'https://lkmart.vercel.app/public/api';
-  String? _token;
+  final _baseUrl = 'https://lkmart.vercel.app/public/api';
   final _client = http.Client();
-  final Map<String, String> _defaultHeaders = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
+  String? _token;
 
-  // Token management (from previous implementation)
-  Future<String?> getToken() async {
-    if (_token != null) return _token;
-    final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString('token');
-    return _token;
+  Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (_token != null) 'Authorization': 'Bearer $_token!',
+      };
+
+  Future<void> _loadToken() async {
+    _token ??= (await SharedPreferences.getInstance()).getString('token');
+  }
+
+  Future<void> _saveToken(String token) async {
+    _token = token;
+    (await SharedPreferences.getInstance()).setString('token', token);
   }
 
   Future<void> clearToken() async {
@@ -30,172 +33,66 @@ class ApiService {
     _token = null;
   }
 
-  Future<void> updateToken(String newToken) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', newToken);
-    _token = newToken;
-  }
+  Future<http.Response> _request(String method, String endpoint,
+      {dynamic body, bool auth = true}) async {
+    if (auth) await _loadToken();
+    final uri = Uri.parse('$_baseUrl/$endpoint');
+    final h = _headers;
 
-  // Main request method
-  Future<http.Response> _request(
-    String method,
-    String endpoint, {
-    dynamic body,
-    Map<String, String>? headers,
-    bool requireAuth = true,
-  }) async {
-    try {
-      // Prepare headers
-      final requestHeaders = Map<String, String>.from(_defaultHeaders);
-      if (headers != null) requestHeaders.addAll(headers);
-
-      // Add auth token if required
-      if (requireAuth) {
-        final token = await getToken();
-        if (token != null) {
-          requestHeaders['Authorization'] = 'Bearer $token';
-        }
-      }
-
-      // Prepare URI
-      final uri = Uri.parse('$baseUrl/$endpoint');
-
-      // Make the request
-      switch (method.toUpperCase()) {
-        case 'GET':
-          return await _client.get(uri, headers: requestHeaders);
-        case 'POST':
-          return await _client.post(
-            uri,
-            headers: requestHeaders,
-            body: jsonEncode(body),
-          );
-        case 'PUT':
-          return await _client.put(
-            uri,
-            headers: requestHeaders,
-            body: jsonEncode(body),
-          );
-        case 'PATCH':
-          return await _client.patch(
-            uri,
-            headers: requestHeaders,
-            body: jsonEncode(body),
-          );
-        case 'DELETE':
-          return await _client.delete(
-            uri,
-            headers: requestHeaders,
-            body: jsonEncode(body),
-          );
-        default:
-          throw Exception('Unsupported HTTP method: $method');
-      }
-    } catch (e) {
-      throw Exception('API request failed: $e');
+    switch (method) {
+      case 'GET':
+        return _client.get(uri, headers: h);
+      case 'POST':
+        return _client.post(uri, headers: h, body: jsonEncode(body));
+      case 'PUT':
+        return _client.put(uri, headers: h, body: jsonEncode(body));
+      case 'PATCH':
+        return _client.patch(uri, headers: h, body: jsonEncode(body));
+      case 'DELETE':
+        return _client.delete(uri, headers: h, body: jsonEncode(body));
+      default:
+        throw Exception('Invalid method');
     }
   }
 
-  // Convenience methods for common HTTP verbs
-  Future<http.Response> get(String endpoint,
-          {Map<String, String>? headers, bool requireAuth = true}) =>
-      _request('GET', endpoint, headers: headers, requireAuth: requireAuth);
+  // Common requests
+  Future<http.Response> get(String e, {bool auth = true}) =>
+      _request('GET', e, auth: auth);
+  Future<http.Response> post(String e, dynamic b, {bool auth = true}) =>
+      _request('POST', e, body: b, auth: auth);
 
-  Future<http.Response> post(String endpoint,
-          {dynamic body,
-          Map<String, String>? headers,
-          bool requireAuth = true}) =>
-      _request('POST', endpoint,
-          body: body, headers: headers, requireAuth: requireAuth);
-
-  Future<http.Response> put(String endpoint,
-          {dynamic body,
-          Map<String, String>? headers,
-          bool requireAuth = true}) =>
-      _request('PUT', endpoint,
-          body: body, headers: headers, requireAuth: requireAuth);
-
-  Future<http.Response> patch(String endpoint,
-          {dynamic body,
-          Map<String, String>? headers,
-          bool requireAuth = true}) =>
-      _request('PATCH', endpoint,
-          body: body, headers: headers, requireAuth: requireAuth);
-
-  Future<http.Response> delete(String endpoint,
-          {dynamic body,
-          Map<String, String>? headers,
-          bool requireAuth = true}) =>
-      _request('DELETE', endpoint,
-          body: body, headers: headers, requireAuth: requireAuth);
-
-  // Add your specific API endpoints here
-  Future<bool> validateToken() async {
-    final response = await get('validate-token', requireAuth: true);
-
-    if (response.statusCode == 200) {
-      return true;
-    }
-
-    await clearToken();
-
-    return false;
-  }
-
+  // Auth & user
   Future<http.Response> login(String email, String password) async {
-    final response = await post(
-      'login',
-      body: {'email': email, 'password': password},
-      requireAuth: false,
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      await updateToken(data['token']);
-    }
-
-    return response;
+    final res = await post('login', {'email': email, 'password': password}, auth: false);
+    if (res.statusCode == 200) await _saveToken(jsonDecode(res.body)['token']);
+    return res;
   }
 
-  Future<http.Response> register(String fullname, String address,
-      String username, String password, String confirmPassword) async {
-    final response = await post(
-      'register',
-      body: {
-        'name': fullname,
+  Future<http.Response> register(String name, String address, String user,
+          String pass, String confirmPass) =>
+      post('register', {
+        'name': name,
         'address': address,
-        'username': username,
-        'password': password,
-        'password_confirmation': confirmPassword,
-      },
-      requireAuth: false,
-    );
-
-    return response;
-  }
+        'username': user,
+        'password': pass,
+        'password_confirmation': confirmPass,
+      }, auth: false);
 
   Future<http.Response> logout() async {
-    final response = await post('logout', requireAuth: true);
-
+    final res = await post('logout', {}, auth: true);
     await clearToken();
-
-    return response;
+    return res;
   }
 
-  Future<http.Response> getItems() async {
-    final response = await get('item');
-
-    return response;
+  // App-specific
+  Future<bool> validateToken() async {
+    final res = await get('validate-token');
+    if (res.statusCode != 200) await clearToken();
+    return res.statusCode == 200;
   }
 
-  Future<http.Response> getProfile() async {
-    final response = await get('profile');
+  Future<http.Response> getItems() => get('item');
+  Future<http.Response> getProfile() => get('profile');
 
-    return response;
-  }
-
-  // Remember to close the client when done
-  void close() {
-    _client.close();
-  }
+  void close() => _client.close();
 }
